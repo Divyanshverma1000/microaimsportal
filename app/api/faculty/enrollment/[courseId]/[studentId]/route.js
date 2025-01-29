@@ -28,6 +28,7 @@ export async function PATCH(request, { params }) {
     }
 
     studentEnrollment.facultyAdvisorApproval = status;
+    studentEnrollment.enrollmentStatus = status;
     if (status === "approved") {
       studentEnrollment.approvedOn = new Date();
     }

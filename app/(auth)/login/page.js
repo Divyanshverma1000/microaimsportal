@@ -40,7 +40,7 @@ const LoginPage = () => {
     // Use a promise to ensure `refresh` completes before navigating
     await router.refresh();
   
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    // await new Promise((resolve) => setTimeout(resolve, 100));
   
     // Navigate to the home page
     router.push("/home");
