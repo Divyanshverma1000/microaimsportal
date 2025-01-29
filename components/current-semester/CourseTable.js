@@ -10,6 +10,7 @@ const CourseTable = ({ courses, currentStudentId }) => {
             <tr className="border-b border-gray-700">
               <th className="py-2 px-4 text-left">Course Name</th>
               <th className="py-2 px-4 text-center">Credits</th>
+              <th className="py-2 px-4 text-center">Semester</th>
               <th className="py-2 px-4 text-center">Enrollment Status</th>
             </tr>
           </thead>
@@ -32,6 +33,9 @@ const CourseTable = ({ courses, currentStudentId }) => {
                   <td className="py-2 px-4 text-left">{course.courseName}</td>
                   <td className="py-2 px-4 text-center">
                     {course.courseCredit}
+                  </td>
+                  <td className="py-2 px-4 text-center">
+                    {course.semesterOffered}
                   </td>
                   <td className="py-2 px-4 text-center">
                     <span
