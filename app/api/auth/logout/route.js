@@ -1,4 +1,4 @@
-import cookie from 'cookie';
+import {serialize} from 'cookie';
 
 export async function POST(req) {
   return new Response(
@@ -6,7 +6,7 @@ export async function POST(req) {
     {
       status: 200,
       headers: {
-        'Set-Cookie': cookie.serialize('authToken', '', {
+        'Set-Cookie': serialize('authToken', '', {
           httpOnly: true,
           expires: new Date(0),
           path: '/',
