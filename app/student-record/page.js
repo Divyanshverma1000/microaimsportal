@@ -1,104 +1,113 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import SemesterTable from "@/components/student-record/SemesterTable";
 
-const StudentRecordPage = () => {
-  const [records, setRecords] = useState([]);
+import { useEffect, useState } from "react";
+
+const StudentRecordsPage = () => {
+  const [studentData, setStudentData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchData = async () => {
-      const data = [
-        {
-          semesterNumber: 1,
-          courses: [
-            { name: "MA101", credits: 4, grade: "A" },
-            { name: "PH101", credits: 3, grade: "B" },
-            { name: "CS101", credits: 3, grade: "C" },
-            { name: "CY101", credits: 3, grade: "B-" },
-            { name: "GE101", credits: 3, grade: "A" },
-            { name: "HS101", credits: 3, grade: "B-" },
-          ],
-          totalCredits: 20,
-          earnedCredits: 20,
-        },
-        {
-          semesterNumber: 2,
-          courses: [
-            { name: "MA102", credits: 4, grade: "A-" },
-            { name: "PH102", credits: 3, grade: "C" },
-            { name: "CS102", credits: 3, grade: "C-" },
-            { name: "CY102", credits: 3, grade: "B-" },
-            { name: "GE102", credits: 3, grade: "B" },
-            { name: "HS102", credits: 3, grade: "B-" },
-          ],
-          totalCredits: 40,
-          earnedCredits: 20,
-        },
-      ];
-      setRecords(data);
+    const fetchStudentRecords = async () => {
+      try {
+        const response = await fetch("/api/student/records", {
+          method: "GET",
+          credentials: "include", // Send cookies with the request
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to fetch student records");
+        }
+
+        const data = await response.json();
+        setStudentData(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchData();
+    fetchStudentRecords();
   }, []);
 
-  const calculateCGPA = (records) => {
-    let totalPoints = 0;
-    let totalCredits = 0;
-    const cumulativeCGPAs = [];
+  if (loading) return <div className="text-center mt-20 text-gray-200">Loading...</div>;
+  if (error) return <div className="text-center mt-20 text-red-500">{error}</div>;
 
-    records.forEach(({ courses }) => {
-      courses.forEach(({ grade, credits }) => {
-        const gradePoint =
-          {
-            A: 10,
-            "A-": 9,
-            B: 8,
-            "B-": 7,
-            C: 6,
-            "C-": 5,
-            D: 4,
-            F: 0,
-          }[grade] || 0;
-
-        totalPoints += gradePoint * credits;
-        totalCredits += credits;
-      });
-
-      const cgpa =
-        totalCredits > 0 ? (totalPoints / totalCredits).toFixed(2) : "N/A";
-      cumulativeCGPAs.push(cgpa);
-    });
-
-    return cumulativeCGPAs;
-  };
-
-  const cumulativeCGPAs = calculateCGPA(records);
+  const { student, semesters, cgpa } = studentData;
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center px-4 py-6">
-      <h1 className="w-full max-w-4xl bg-gray-800 rounded-2xl py-4 px-6 shadow-lg mb-8 text-center text-3xl font-bold text-white">
-        Student Record
-      </h1>
+    <div className="min-h-screen bg-gray-900 text-gray-200 p-8">
+      <div className="max-w-5xl mx-auto bg-gray-800 shadow-md rounded-lg p-6">
+        <h1 className="text-3xl font-bold text-gray-100 mb-6 border-b border-gray-600 pb-3">Student Record</h1>
+        <div className="mb-8">
+          <p className="text-lg">
+            <span className="font-semibold text-blue-400">Name:</span> {student.name}
+          </p>
+          <p className="text-lg">
+            <span className="font-semibold text-blue-400">Roll No:</span> {student.rollNo}
+          </p>
+          <p className="text-lg">
+            <span className="font-semibold text-blue-400">Email:</span> {student.email}
+          </p>
+        </div>
 
-      {records.map((record, index) => (
-        <SemesterTable
-          key={index}
-          {...record}
-          cumulativeCGPA={cumulativeCGPAs[index]}
-        />
-      ))}
+        {Object.keys(semesters).length > 0 ? (
+          <>
+            {Object.keys(semesters).map((semester) => {
+              const { courses, totalCredits, sgpa } = semesters[semester];
+              return (
+                <div key={semester} className="mb-8">
+                  <h2 className="text-2xl font-semibold text-gray-100 mb-4">
+                    Semester {semester}
+                  </h2>
+                  <div className="border border-gray-700 rounded-lg p-4 bg-gray-700">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr>
+                          <th className="border-b border-gray-600 p-2 text-blue-400">Course Name</th>
+                          <th className="border-b border-gray-600 p-2 text-blue-400">Course Code</th>
+                          <th className="border-b border-gray-600 p-2 text-blue-400">Credits</th>
+                          <th className="border-b border-gray-600 p-2 text-blue-400">Grade</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {courses.map((course) => (
+                          <tr key={course.courseId}>
+                            <td className="p-2 border-b border-gray-600">{course.courseName}</td>
+                            <td className="p-2 border-b border-gray-600">{course.courseCode}</td>
+                            <td className="p-2 border-b border-gray-600">{course.courseCredit}</td>
+                            <td className="p-2 border-b border-gray-600">{course.grade}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <div className="mt-4">
+                      <p className="text-lg">
+                        <span className="font-semibold text-blue-400">Total Credits:</span> {totalCredits}
+                      </p>
+                      <p className="text-lg">
+                        <span className="font-semibold text-blue-400">SGPA:</span> {sgpa}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
 
-      <div className="w-full max-w-4xl bg-gray-800 rounded-2xl py-6 px-6 shadow-lg mt-8 text-center">
-        <h2 className="text-3xl font-bold mb-4 text-white">
-          Cumulative Performance
-        </h2>
-        <p className="text-lg text-gray-300">
-          <strong>Overall CGPA:</strong>{" "}
-          {cumulativeCGPAs[cumulativeCGPAs.length - 1] || "N/A"}
-        </p>
+            <div className="mt-8">
+              <h3 className="text-2xl font-bold text-blue-400">
+                Total CGPA: <span className="text-gray-100">{cgpa}</span>
+              </h3>
+            </div>
+          </>
+        ) : (
+          <p className="text-center text-gray-500">No records available</p>
+        )}
       </div>
     </div>
   );
 };
 
-export default StudentRecordPage;
+export default StudentRecordsPage;

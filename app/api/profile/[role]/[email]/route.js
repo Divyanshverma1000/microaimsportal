@@ -3,6 +3,7 @@ import { connectDB } from "@/utils/db";
 import Student from "@/models/Student";
 import Professor from "@/models/Professor";
 import Admin from "@/models/Admin";
+import Batch from "@/models/Batch";
 
 export async function GET(request, { params }) {
   try {
